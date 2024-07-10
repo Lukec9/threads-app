@@ -1,11 +1,11 @@
 import express from "express";
 import {
-  signupUser,
+  followUnFollowUser,
+  getUserProfile,
   loginUser,
   logoutUser,
-  followUnfollowUser,
+  signupUser,
   updateUser,
-  getUserProfile,
 } from "../controllers/userController.js";
 import protectRoute from "../middleware/protectRoute.js";
 
@@ -15,7 +15,7 @@ router.get("/profile/:username", getUserProfile);
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
-router.post("/follow/:id", protectRoute, followUnfollowUser);
-router.post("/update/:id", protectRoute, updateUser);
+router.post("/follow/:id", protectRoute, followUnFollowUser); // Toggle state(follow/unfollow)
+router.put("/update/:id", protectRoute, updateUser);
 
 export default router;
