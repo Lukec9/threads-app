@@ -155,7 +155,9 @@ const updateUser = async (req, res) => {
         );
       }
 
-      const uploadedResponse = await cloudinary.uploader.upload(profilePic);
+      const uploadedResponse = await cloudinary.uploader.upload(profilePic, {
+        folder: "threads-app",
+      });
       profilePic = uploadedResponse.secure_url;
     }
 

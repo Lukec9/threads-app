@@ -6,7 +6,6 @@ import SignupCard from '../components/SignUpCard'
 
 const AuthPage = () => {
   const authScreenState = useRecoilValue(authScreenAtom)
-  console.log(authScreenState)  
   
   return <>
     {authScreenState === 'login' ? <LoginCard /> : <SignupCard />}
