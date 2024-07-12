@@ -31,19 +31,19 @@ const HomePage = () => {
 
   
 	return (
-    <>
-    {!loading && posts.length === 0 && <h1>Follow some users to see the feed</h1>}
+		<>
+			{!loading && posts.length === 0 && <h1>Follow some users to see the feed</h1>}
 
-    {loading && (
-      <Flex justify='center'>
-        <Spinner size='xl' />
-      </Flex>
-    )}
+			{loading && (
+				<Flex justify='center'>
+					<Spinner size='xl' />
+				</Flex>
+			)}
 
-    {posts.map((post) => (
-      <Post key={post._id} post={post} postedBy={post.postedBy} />
-    ))}
-  </>
+			{posts.map((post) => (
+				<Post key={post._id} post={post} postedBy={post.postedBy} />
+			))}
+		</>
 	);
 };
 
