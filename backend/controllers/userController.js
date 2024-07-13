@@ -159,9 +159,8 @@ const updateUser = async (req, res) => {
 
     if (profilePic) {
       if (user.profilePic) {
-        await cloudinary.uploader.destroy(
-          user.profilePic.split("/").pop().split(".")[0]
-        );
+        const imgId = user.profilePic.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`threads-app/${imgId}`);
       }
 
       const uploadedResponse = await cloudinary.uploader.upload(profilePic, {

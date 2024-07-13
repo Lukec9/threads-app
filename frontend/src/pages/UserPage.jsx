@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import UserHeader from "../components/UserHeader";
-import UserPost from "../components/UserPost";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link,  useParams } from "react-router-dom";
 import useShowToast from "../hooks/useShowToast";
 import { Button, Flex, Spinner } from "@chakra-ui/react";
+import Post from "../components/Post";
 
 const UserPage = () => {
   const [user, setUser ] = useState(null)
   const { username } = useParams()
   const [loading, setLoading] = useState(true)
+  const [posts, setPosts ] = useState([])
+  const [fetchingPosts, setFetchingPosts ] = useState(true)
   const showToast = useShowToast()
 
   useEffect(() => {
@@ -28,7 +30,23 @@ const UserPage = () => {
       }
     }
 
+    const getPosts = async () => {
+			setFetchingPosts(true);
+			try {
+				const res = await fetch(`/api/posts/user/${username}`);
+				const data = await res.json();
+				console.log(data);
+				setPosts(data);
+			} catch (error) {
+				showToast("Error", error.message, "error");
+				setPosts([]);
+			} finally {
+				setFetchingPosts(false);
+			}
+		};
+
     getUser()
+    getPosts()
 
   }, [username])
   
@@ -55,15 +73,15 @@ const UserPage = () => {
 	return (
 		<>
 			<UserHeader user={user} />
-			{/* <UserPost likes={1200} replies={481} postImg='/post1.png' postTitle="Let's talk about threads." />
-			<UserPost likes={451} replies={12} postImg='/post2.png' postTitle='Nice tutorial. Highly recommended.' />
-			<UserPost
-				likes={6721}
-				replies={989}
-				postImg='/post3.png'
-				postTitle="I love this guy and can't wait to see him in cage. 💪"
-			/>
-			<UserPost likes={212} replies={56} postTitle='This is my first thread.' /> */}
+			{!fetchingPosts && posts.length === 0 && <h1>User has not posted anything.</h1>}
+			{fetchingPosts && (
+				<Flex justifyContent={"center"} my={12}>
+					<Spinner size={"xl"} />
+				</Flex>
+			)}
+      {posts.map((post) => (
+				<Post key={post._id} post={post} postedBy={post.postedBy} />
+			))}
 		</>
 	);
 };

@@ -82,7 +82,7 @@ const Actions = ({ post: post_ }) => {
       setPost(prevPost => ({
         ...prevPost,
         replies: [...prevPost.replies, data.reply]
-      }));      c
+      }));      
 			showToast("Success", "Reply posted successfully", "success");
 			onClose();
 			setReply("");
