@@ -7,12 +7,14 @@ import Actions from "./Actions";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { formatDistanceToNow } from "date-fns";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
+import postsAtom from "../atoms/postAtom";
 
 const Post = ({ post, postedBy }) => {
 	const [user, setUser] = useState(null);
   const currentUser = useRecoilValue(userAtom)
+  const [ posts, setPosts] = useRecoilState(postsAtom)
 	const showToast = useShowToast();
 
 	const navigate = useNavigate();
@@ -49,6 +51,7 @@ const Post = ({ post, postedBy }) => {
 				showToast("Error", data.error, "error");
 				return;
 			}
+      setPosts(posts.filter((p) => p._id !== post._id))
 			showToast("Success", "Post deleted", "success");
 		} catch (error) {
 			showToast("Error", error.message, "error");

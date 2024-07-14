@@ -15,15 +15,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import useShowToast from "../hooks/useShowToast";
+import postsAtom from "../atoms/postAtom";
 
-const Actions = ({ post: post_ }) => {
+const Actions = ({ post }) => {
   const user = useRecoilValue(userAtom);
-  const [liked, setLiked] = useState(post_.likes.includes(user?._id));
+  const [liked, setLiked] = useState(post.likes.includes(user?._id));
   const showToast = useShowToast();
-  const [post, setPost] = useState(post_);
+  const [posts, setPosts] = useRecoilState(postsAtom);
   const [isLiking, setIsLiking] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [reply, setReply] = useState("");
@@ -50,10 +51,22 @@ const Actions = ({ post: post_ }) => {
 
       if (!liked) {
         // add the id of the current user to post.likes array
-        setPost({ ...post, likes: [...post.likes, user._id] });
+        const updatedPosts = posts.map(p => {
+          if (p._id === post._id) {
+            return { ...p, likes: [...p.likes, user._id] };
+          }
+          return p;
+        });
+        setPosts(updatedPosts);
       } else {
         // remove the id of the current user from post.likes array
-        setPost({ ...post, likes: post.likes.filter(id => id !== user._id) });
+        const updatedPosts = posts.map(p => {
+          if (p._id === post._id) {
+            return { ...p, likes: p.likes.filter(id => id !== user._id) };
+          }
+          return p;
+        });
+        setPosts(updatedPosts);
       }
 
       setLiked(!liked);
@@ -65,33 +78,41 @@ const Actions = ({ post: post_ }) => {
   };
 
   const handleReply = async () => {
-		if (!user) return showToast("Error", "You must be logged in to reply to a post", "error");
-		if (isReplying) return;
-		setIsReplying(true);
-		try {
-			const res = await fetch(`/api/posts/reply/${post._id}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ text: reply }),
-			});
-			const data = await res.json();
-			if (data.error) return showToast("Error", data.error, "error");
+    if (!user)
+      return showToast(
+        "Error",
+        "You must be logged in to reply to a post",
+        "error"
+      );
+    if (isReplying) return;
+    setIsReplying(true);
+    try {
+      const res = await fetch(`/api/posts/reply/${post._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: reply }),
+      });
+      const data = await res.json();
+      if (data.error) return showToast("Error", data.error, "error");
 
-      setPost(prevPost => ({
-        ...prevPost,
-        replies: [...prevPost.replies, data.reply]
-      }));      
-			showToast("Success", "Reply posted successfully", "success");
-			onClose();
-			setReply("");
-		} catch (error) {
-			showToast("Error", error.message, "error");
-		} finally {
-			setIsReplying(false);
-		}
-	};
+      const updatedPosts = posts.map(p => {
+        if (p._id === post._id) {
+          return { ...p, replies: [...p.replies, data.reply] };
+        }
+        return p;
+      });
+      setPosts(updatedPosts);
+      showToast("Success", "Reply posted successfully", "success");
+      onClose();
+      setReply("");
+    } catch (error) {
+      showToast("Error", error.message, "error");
+    } finally {
+      setIsReplying(false);
+    }
+  };
   return (
     <Flex flexDirection="column">
       <Flex gap={3} my={2} onClick={e => e.preventDefault()}>
@@ -166,7 +187,8 @@ const Actions = ({ post: post_ }) => {
                 colorScheme="blue"
                 size={"sm"}
                 mr={3}
-                isLoading={isReplying} onClick={handleReply}
+                isLoading={isReplying}
+                onClick={handleReply}
               >
                 Reply
               </Button>
