@@ -1,5 +1,6 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
+import { io, getRecipientSocketId } from "../socket/socket.js";
 
 async function sendMessage(req, res) {
   try {
@@ -36,6 +37,11 @@ async function sendMessage(req, res) {
         },
       }),
     ]);
+
+    const recipientSocketId = getRecipientSocketId(recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(201).json(newMessage);
   } catch (error) {
@@ -77,6 +83,12 @@ async function getConversations(req, res) {
     }).populate({
       path: "participants",
       select: "username profilePic",
+    });
+
+    conversations.forEach(conversation => {
+      conversation.participants = conversation.participants.filter(
+        participant => participant._id.toString() !== userId.toString()
+      );
     });
 
     res.status(200).json(conversations);
