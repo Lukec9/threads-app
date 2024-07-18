@@ -33,29 +33,6 @@ const MessageContainer = () => {
   const { socket } = useSocket();
 
   useEffect(() => {
-    const getMessages = async () => {
-      setLoadingMessages(true);
-      setMessages([]);
-      try {
-        if (selectedConversation.mock) return;
-        const res = await fetch(`/api/messages/${selectedConversation.userId}`);
-        const data = await res.json();
-        if (data.error) {
-          showToast("Error", data.error, "error");
-          return;
-        }
-        setMessages(data);
-      } catch (error) {
-        showToast("Error", error.message, "error");
-      } finally {
-        setLoadingMessages(false);
-      }
-    };
-
-    getMessages();
-  }, [selectedConversation.userId]);
-
-  useEffect(() => {
     socket.on("newMessage", message => {
       if (selectedConversation._id === message.conversationId) {
         setMessages(prev => [...prev, message]);
@@ -82,10 +59,60 @@ const MessageContainer = () => {
   }, [socket]);
 
   useEffect(() => {
+    const lastMessageIsFromOtherUser =
+      messages.length &&
+      messages[messages.length - 1].sender !== currentUser._id;
+    if (lastMessageIsFromOtherUser) {
+      socket.emit("markMessagesAsSeen", {
+        conversationId: selectedConversation._id,
+        userId: selectedConversation.userId,
+      });
+    }
+
+    socket.on("messagesSeen", ({ conversationId }) => {
+      if (selectedConversation._id === conversationId) {
+        setMessages(prev => {
+          const updatedMessages = prev.map(message => {
+            if (!message.seen) {
+              return {
+                ...message,
+                seen: true,
+              };
+            }
+            return message;
+          });
+          return updatedMessages;
+        });
+      }
+    });
+  }, [socket, currentUser._id, messages, selectedConversation]);
+
+  useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // console.log("selected", selectedConversation);
+  useEffect(() => {
+    const getMessages = async () => {
+      setLoadingMessages(true);
+      setMessages([]);
+      try {
+        if (selectedConversation.mock) return;
+        const res = await fetch(`/api/messages/${selectedConversation.userId}`);
+        const data = await res.json();
+        if (data.error) {
+          showToast("Error", data.error, "error");
+          return;
+        }
+        setMessages(data);
+      } catch (error) {
+        showToast("Error", error.message, "error");
+      } finally {
+        setLoadingMessages(false);
+      }
+    };
+
+    getMessages();
+  }, [selectedConversation.userId]);
 
   return (
     <Flex
