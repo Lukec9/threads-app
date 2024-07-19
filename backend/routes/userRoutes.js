@@ -7,6 +7,7 @@ import {
   logoutUser,
   signupUser,
   updateUser,
+  freezeAccount,
 } from "../controllers/userController.js";
 import protectRoute from "../middleware/protectRoute.js";
 
@@ -17,6 +18,7 @@ router.get("/suggested", protectRoute, getSuggestedUsers);
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+router.put("/freeze", protectRoute, freezeAccount);
 router.post("/follow/:id", protectRoute, followUnFollowUser);
 router.put("/update/:id", protectRoute, updateUser);
 
