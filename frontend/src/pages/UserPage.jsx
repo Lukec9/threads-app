@@ -16,11 +16,11 @@ const UserPage = () => {
   const showToast = useShowToast();
 
   useEffect(() => {
-    setPosts([]);
     const getPosts = async () => {
+      if (!user) return;
+      setPosts([]);
       setFetchingPosts(true);
       try {
-        if (!user) return;
         const res = await fetch(`/api/posts/user/${username}`);
         const data = await res.json();
         setPosts(data);
@@ -33,7 +33,7 @@ const UserPage = () => {
     };
 
     getPosts();
-  }, [username]);
+  }, [user, username, setPosts]);
 
   if (!user && loading) {
     return (
