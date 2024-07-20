@@ -16,6 +16,7 @@ const UserPage = () => {
   const showToast = useShowToast();
 
   useEffect(() => {
+    setPosts([]);
     const getPosts = async () => {
       setFetchingPosts(true);
       try {
